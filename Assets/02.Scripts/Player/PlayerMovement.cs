@@ -6,8 +6,9 @@ public class PlayerMovement : MonoBehaviour
 {
     private CharacterController _controller;
 
-    private Vector2 _moveDirection = Vector2.zero;
     private Rigidbody2D _rigidbody;
+
+    private Animator _animator;
 
     private float speed = 5;
 
@@ -15,26 +16,32 @@ public class PlayerMovement : MonoBehaviour
     {
         _controller = GetComponent<CharacterController>();
         _rigidbody = GetComponent<Rigidbody2D>();
+        _animator = GetComponentInChildren<Animator>();
     }
 
     private void Start()
     {
-        _controller.OnMoveEnent += Move;
-    }
-
-    private void FixedUpdate()
-    {
-        ApplyMoveLogic(_moveDirection);
+        _controller.OnMoveEvent += Move;
     }
 
     private void Move(Vector2 direction)
     {
-        _moveDirection = direction;
+        ApplyMoveLogic(direction);
+
+        MoveAnimation(direction);
     }
 
     private void ApplyMoveLogic(Vector2 direction)
     {
         direction *= speed;
         _rigidbody.velocity = direction;
+    }
+
+    private void MoveAnimation(Vector2 direction)
+    {
+        if (direction.magnitude > 0.1)
+            _animator.SetBool("IsRun", true);
+        else
+            _animator.SetBool("IsRun", false);
     }
 }
