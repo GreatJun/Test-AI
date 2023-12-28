@@ -6,9 +6,9 @@ public class FarEnemyAI : MonoBehaviour
 {
     [Header("Range")]
     [SerializeField]
-    float _detectRange = 10f;
+    float _detectDistance = 10f;   // 인식 거리
     [SerializeField]
-    float _AttackRange = 5f;
+    float _attackDistance = 5f;    // 공격 거리
 
     [Header("Movement")]
     [SerializeField]
@@ -19,10 +19,13 @@ public class FarEnemyAI : MonoBehaviour
     Vector3 _originPos = default;
     Animator _animator = null;
 
+    const string _ATTACK_ANIM_STATE_NAME = "Attack";
+    const string _ATTACK_ANIM_TIRGGER_NAME = "IsAttack";
+
     private void Awake()
     {
         _BTRunner = new BehaviourTreeRunner(SettingBT());
-        _animator = GetComponent<Animator>();
+        _animator = GetComponentInChildren<Animator>();
         _originPos = transform.position;
     }
 
@@ -59,48 +62,115 @@ public class FarEnemyAI : MonoBehaviour
             );
     }
 
+    bool IsAnimationRunning(string stateName)
+    {
+        if (_animator != null)
+        {
+            if (_animator.GetCurrentAnimatorStateInfo(0).IsName(stateName)) // (stateName) 애니메이션이 진행중인가?
+            {
+                var normalizedTime = _animator.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
+                return normalizedTime != 0 && normalizedTime < 1f;
+            }
+        }
+
+        return false;
+    }
+
     #region Attack Node
-    INode.EnodeState CheckAttacking()
+    INode.ENodeState CheckAttacking()
     {
-        return INode.EnodeState.ENS_Success;
+        if (IsAnimationRunning(_ATTACK_ANIM_STATE_NAME))
+        {
+            return INode.ENodeState.ENS_Running;
+        }
+
+        return INode.ENodeState.ENS_Success;
     }
 
-    INode.EnodeState CheckEnemyWithineAttackRange()
+    INode.ENodeState CheckEnemyWithineAttackRange()
     {
-        return INode.EnodeState.ENS_Failure;
+        if (_detectedPlayer != null)
+        {
+            if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance)) // 제곱근(피타고라스)
+            {
+                return INode.ENodeState.ENS_Success;
+            }
+        }
+
+        return INode.ENodeState.ENS_Failure;
     }
 
-    INode.EnodeState DoAttack()
+    INode.ENodeState DoAttack()
     {
-        return INode.EnodeState.ENS_Failure;
+        if (_detectedPlayer != null)
+        {
+            _animator.SetTrigger(_ATTACK_ANIM_TIRGGER_NAME);
+            return INode.ENodeState.ENS_Success;
+        }
+
+        return INode.ENodeState.ENS_Failure;
     }
     #endregion
 
     #region Detect & Move Node
-    INode.EnodeState CheckDetectEnemy()
+    INode.ENodeState CheckDetectEnemy()
     {
-        return INode.EnodeState.ENS_Failure;
+        // var overlapColliders = Physics.OverlapSphere(transform.position, _detectDistance, LayerMask.GetMask("Player")); // OverlapSphere : 구 형태로 "주변 콜라이더" 감지 <= 3D
+        var overlapColliders = Physics2D.OverlapCircleAll(transform.position, _detectDistance, LayerMask.GetMask("Player"));
+
+        if (overlapColliders != null && overlapColliders.Length > 0)
+        {
+            _detectedPlayer = overlapColliders[0].transform;
+            Debug.Log("감지됨");
+
+            return INode.ENodeState.ENS_Success;
+        }
+
+        _detectedPlayer = null;
+
+        return INode.ENodeState.ENS_Failure;
     }
 
-    INode.EnodeState MoveToDetectEnemy()
+    INode.ENodeState MoveToDetectEnemy()
     {
-        return INode.EnodeState.ENS_Failure;
+        if (_detectedPlayer != null)
+        {
+            if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance))
+            {
+                return INode.ENodeState.ENS_Success;
+            }
+
+            transform.position = Vector3.MoveTowards(transform.position, _detectedPlayer.position, Time.deltaTime * _movementSpeed);
+
+            return INode.ENodeState.ENS_Running;
+        }
+
+        return INode.ENodeState.ENS_Failure;
     }
     #endregion
 
     #region Move Origin Position Node
-    INode.EnodeState MoveToOriginPosition()
+    INode.ENodeState MoveToOriginPosition()
     {
-        return 0;
+        if (Vector3.SqrMagnitude(_originPos - transform.position) < float.Epsilon * float.Epsilon) // Epsilon : 수학에서 매우 작은 수를 의미하는 기호
+        {
+            return INode.ENodeState.ENS_Success;
+        }
+        else
+        {
+            transform.position = Vector3.MoveTowards(transform.position, _originPos, Time.deltaTime * _movementSpeed);
+            return INode.ENodeState.ENS_Running;
+        }
     }
     #endregion
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.green;
-        Gizmos.DrawWireSphere(this.transform.position, _detectRange);
+        Gizmos.DrawWireSphere(this.transform.position, _detectDistance);
 
         Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(this.transform.position, _AttackRange);
+        Gizmos.DrawWireSphere(this.transform.position, _attackDistance);
     }
 }

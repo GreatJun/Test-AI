@@ -6,12 +6,12 @@ using UnityEngine;
 // 인터페이스의 Node의 상태와 노드가 어떤 상태인지를 반환하는 Evaluate() 메서드
 public interface INode
 {
-    public enum EnodeState
+    public enum ENodeState
     {
-        ENS_Runnung,
+        ENS_Running,
         ENS_Success,
         ENS_Failure
     }
 
-    public EnodeState Evaluate();
+    public ENodeState Evaluate();
 }

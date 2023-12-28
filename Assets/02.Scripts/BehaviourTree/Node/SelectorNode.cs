@@ -16,22 +16,22 @@ public sealed class SelectorNode : INode
         _childs = childs;
     }
 
-    public INode.EnodeState Evaluate()
+    public INode.ENodeState Evaluate()
     {
         if (_childs == null)
-            return INode.EnodeState.ENS_Failure;
+            return INode.ENodeState.ENS_Failure;
 
         foreach (var child in _childs)
         {
             switch (child.Evaluate())
             {
-                case INode.EnodeState.ENS_Runnung:
-                    return INode.EnodeState.ENS_Runnung;
-                case INode.EnodeState.ENS_Success:
-                    return INode.EnodeState.ENS_Success;
+                case INode.ENodeState.ENS_Running:
+                    return INode.ENodeState.ENS_Running;
+                case INode.ENodeState.ENS_Success:
+                    return INode.ENodeState.ENS_Success;
             }
         }
 
-        return INode.EnodeState.ENS_Failure;
+        return INode.ENodeState.ENS_Failure;
     }
 }
