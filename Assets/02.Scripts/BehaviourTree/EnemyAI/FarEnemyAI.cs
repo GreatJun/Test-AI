@@ -6,13 +6,13 @@ public class FarEnemyAI : MonoBehaviour
 {
     [Header("Range")]
     [SerializeField]
-    float _detectDistance = 10f;   // 인식 거리
+    float _detectDistance = 7f;   // 인식 거리
     [SerializeField]
-    float _attackDistance = 5f;    // 공격 거리
+    float _attackDistance = 3f;    // 공격 거리
 
     [Header("Movement")]
     [SerializeField]
-    float _movementSpeed = 5f;
+    float _movementSpeed = 3f;
 
     BehaviourTreeRunner _BTRunner = null;
     Transform _detectedPlayer = null;
@@ -122,7 +122,6 @@ public class FarEnemyAI : MonoBehaviour
         if (overlapColliders != null && overlapColliders.Length > 0)
         {
             _detectedPlayer = overlapColliders[0].transform;
-            Debug.Log("감지됨");
 
             return INode.ENodeState.ENS_Success;
         }
