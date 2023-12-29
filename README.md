@@ -54,3 +54,8 @@ Leaf(Action Node)는 나뭇잎, 트리의 끝 구조 즉, **행동을 정의한 
     - 자식 노드들 중에서 **실패(Failure)한** 노드가 있을 때까지 진행한다.
     
 - 여러 행동을 **순서대로 진행**해야 할 때 사용하기 좋다.
+
+
+![BT0](https://github.com/GreatJun/Test-AI/assets/127035454/67913b12-bab4-4212-b6ac-c1da3a2d88aa)
+
+
