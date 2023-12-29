@@ -4,12 +4,14 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    [Header("Range")]
+    // Distance
+    [Header("Distnace")]
     [SerializeField]
-    protected float _detectDistance;   // 인식 거리
+    protected float _detectDistance;
     [SerializeField]
-    protected float _attackDistance;    // 공격 거리
+    protected float _attackDistance;
 
+    // Movement
     [Header("Movement")]
     [SerializeField]
     protected float _movementSpeed;
@@ -21,6 +23,13 @@ public class Enemy : MonoBehaviour
 
     protected const string _ATTACK_ANIM_STATE_NAME = "Attack";
     protected const string _ATTACK_ANIM_TIRGGER_NAME = "IsAttack";
+
+    public Enemy()
+    {
+        this._detectDistance = 0;
+        this._attackDistance = 0;
+        this._movementSpeed = 0;
+    }
 
     protected void Awake()
     {

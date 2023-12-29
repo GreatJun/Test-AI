@@ -8,9 +8,9 @@ public interface INode
 {
     public enum ENodeState
     {
-        ENS_Running,
-        ENS_Success,
-        ENS_Failure
+        ENS_Running, // 진행중
+        ENS_Success, // 성공
+        ENS_Failure  // 실패
     }
 
     public ENodeState Evaluate();

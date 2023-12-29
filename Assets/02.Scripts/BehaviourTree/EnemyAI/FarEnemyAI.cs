@@ -2,8 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public sealed class FarEnemyAI : Enemy
+public class FarEnemyAI : Enemy
 {
+    public FarEnemyAI() : base()
+    {
+        this._detectDistance = 7;
+        this._attackDistance = 4;
+        this._movementSpeed = 2;
+    }
+
+
     protected override INode.ENodeState MoveToDetectEnemy()
     {
         if (_detectedPlayer != null)
