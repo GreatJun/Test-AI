@@ -16,6 +16,10 @@ public class Enemy : MonoBehaviour
     [SerializeField]
     protected float _movementSpeed;
 
+    // CoolTime
+    [Header("CoolTime")]
+    protected bool _isCoolTime;
+
     protected BehaviourTreeRunner _BTRunner = null;
     protected Transform _detectedPlayer = null;
     protected Vector3 _originPos = default;
@@ -31,7 +35,7 @@ public class Enemy : MonoBehaviour
         this._movementSpeed = 0;
     }
 
-    protected void Awake()
+    protected virtual void Awake()
     {
         _BTRunner = new BehaviourTreeRunner(SettingBT());
         _animator = GetComponentInChildren<Animator>();
@@ -43,7 +47,7 @@ public class Enemy : MonoBehaviour
         _BTRunner.Operate();
     }
 
-    protected INode SettingBT()
+    protected virtual INode SettingBT()
     {
         return new SelectorNode
             (
@@ -87,7 +91,7 @@ public class Enemy : MonoBehaviour
     }
 
     #region Attack Node
-    protected INode.ENodeState CheckAttacking()
+    protected virtual INode.ENodeState CheckAttacking()
     {
         if (IsAnimationRunning(_ATTACK_ANIM_STATE_NAME))
         {
@@ -110,7 +114,7 @@ public class Enemy : MonoBehaviour
         return INode.ENodeState.ENS_Failure;
     }
 
-    protected INode.ENodeState DoAttack()
+    protected virtual INode.ENodeState DoAttack()
     {
         if (_detectedPlayer != null)
         {
@@ -144,11 +148,10 @@ public class Enemy : MonoBehaviour
     {
         if (_detectedPlayer != null)
         {
-/*          if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance))
+            if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance))
             {
-                transform.position = Vector3.MoveTowards(transform.position, -_detectedPlayer.position, Time.deltaTime * _movementSpeed);
                 return INode.ENodeState.ENS_Running;
-            }*/
+            }
 
             transform.position = Vector3.MoveTowards(transform.position, _detectedPlayer.position, Time.deltaTime * _movementSpeed);
 
@@ -162,12 +165,13 @@ public class Enemy : MonoBehaviour
     #region Move Origin Position Node
     protected INode.ENodeState MoveToOriginPosition()
     {
-        if (Vector3.SqrMagnitude(_originPos - transform.position) < float.Epsilon * float.Epsilon) // Epsilon : 수학에서 매우 작은 수를 의미하는 기호
+        if (Vector3.SqrMagnitude(_originPos - transform.position) <= float.Epsilon * float.Epsilon) // Epsilon : 수학에서 매우 작은 수를 의미하는 기호
         {
             return INode.ENodeState.ENS_Success;
         }
         else
         {
+            Debug.Log("집으로");
             transform.position = Vector3.MoveTowards(transform.position, _originPos, Time.deltaTime * _movementSpeed);
             return INode.ENodeState.ENS_Running;
         }
