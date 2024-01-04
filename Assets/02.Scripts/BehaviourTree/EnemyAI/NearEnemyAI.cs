@@ -5,7 +5,7 @@ using UnityEngine;
 
 public sealed class NearEnemyAI : Enemy
 {
-    Rigidbody2D _rigid;
+    
 
     private float coolTime = 20f;
     private bool isSpecialAttacking = false;
@@ -20,12 +20,6 @@ public sealed class NearEnemyAI : Enemy
         this._movementSpeed = 3;
         this._actionDistance = 3;
         this._isCoolTime = true;
-    }
-
-    protected override void Awake()
-    {
-        base.Awake();
-        _rigid = GetComponent<Rigidbody2D>();
     }
 
     protected override INode SettingBT()
@@ -47,16 +41,16 @@ public sealed class NearEnemyAI : Enemy
                                     (
                                         new List<INode>()
                                         {
-                                            new ActionNode(CheckCoolTime),
-                                            new ActionNode(CheckSpecialAttackDistance),
-                                            new ActionNode(SpecialAttack)
+                                            new ActionNode(CheckCoolTime),  // 쿨타임 체크
+                                            new ActionNode(CheckSpecialAttackDistance), // 범위 안?
+                                            new ActionNode(SpecialAttack) // 특수 공격
 
                                         }
                                     )
                                 }
                             ),
                             new ActionNode(CheckEnemyWithineAttackRange), // 공격 범위 안?
-                            new ActionNode(DoAttack)
+                            new ActionNode(DoAttack) // 일반 공격
                         }
                     ),
                     new SequenceNode
@@ -99,8 +93,12 @@ public sealed class NearEnemyAI : Enemy
     {
         if (_isCoolTime && _detectedPlayer != null)
         {
-            StartCoroutine(CoolTime());
-            StartCoroutine(CrashAttack());
+            CheckPlayerRay();
+            if (hitData[1].collider.CompareTag("Player"))
+            {
+                StartCoroutine(CoolTime());
+                StartCoroutine(CrashAttack());
+            }
 
             return INode.ENodeState.ENS_Running;
         }

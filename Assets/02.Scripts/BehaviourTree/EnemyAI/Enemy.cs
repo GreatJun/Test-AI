@@ -27,6 +27,9 @@ public class Enemy : MonoBehaviour
     protected Vector3 _originPos = default;
     protected Animator _animator = null;
 
+    protected Rigidbody2D _rigid;
+    protected RaycastHit2D[] hitData;
+
     protected const string _ATTACK_ANIM_STATE_NAME = "Attack";
     protected const string _ATTACK_ANIM_TIRGGER_NAME = "IsAttack";
 
@@ -41,6 +44,7 @@ public class Enemy : MonoBehaviour
     {
         _BTRunner = new BehaviourTreeRunner(SettingBT());
         _animator = GetComponentInChildren<Animator>();
+        _rigid = GetComponent<Rigidbody2D>();
         _originPos = transform.position;
     }
 
@@ -150,14 +154,18 @@ public class Enemy : MonoBehaviour
     {
         if (_detectedPlayer != null)
         {
-            if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance))
+            CheckPlayerRay();
+            if (hitData[1].collider.CompareTag("Player"))
             {
+                if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance))
+                {
+                    return INode.ENodeState.ENS_Running;
+                }
+
+                transform.position = Vector3.MoveTowards(transform.position, _detectedPlayer.position, Time.deltaTime * _movementSpeed);
+
                 return INode.ENodeState.ENS_Running;
             }
-
-            transform.position = Vector3.MoveTowards(transform.position, _detectedPlayer.position, Time.deltaTime * _movementSpeed);
-
-            return INode.ENodeState.ENS_Running;
         }
 
         return INode.ENodeState.ENS_Failure;
@@ -173,12 +181,18 @@ public class Enemy : MonoBehaviour
         }
         else
         {
-            Debug.Log("ÁýÀ¸·Î");
             transform.position = Vector3.MoveTowards(transform.position, _originPos, Time.deltaTime * _movementSpeed);
             return INode.ENodeState.ENS_Running;
         }
     }
     #endregion
+
+    protected void CheckPlayerRay()
+    {
+        hitData = Physics2D.RaycastAll(_rigid.position, _detectedPlayer.position - transform.position, _detectDistance);
+        Debug.DrawRay(transform.position, _detectedPlayer.position - transform.position, new Color(1, 0, 0));
+
+    }
 
     protected void OnDrawGizmos()
     {
