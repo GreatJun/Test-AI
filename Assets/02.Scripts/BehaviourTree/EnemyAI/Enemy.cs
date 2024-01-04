@@ -10,6 +10,8 @@ public class Enemy : MonoBehaviour
     protected float _detectDistance;
     [SerializeField]
     protected float _attackDistance;
+    [SerializeField]
+    protected float _actionDistance;
 
     // Movement
     [Header("Movement")]
@@ -185,5 +187,8 @@ public class Enemy : MonoBehaviour
 
         Gizmos.color = Color.blue;
         Gizmos.DrawWireSphere(this.transform.position, _attackDistance);
+
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(this.transform.position, _actionDistance);
     }
 }

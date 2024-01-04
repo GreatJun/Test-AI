@@ -6,11 +6,9 @@ using UnityEngine;
 public sealed class NearEnemyAI : Enemy
 {
     Rigidbody2D _rigid;
-    Collider2D[] _colliders;
 
     private float coolTime = 20f;
     private bool isSpecialAttacking = false;
-    private Vector2 crashBoxSize = new Vector2(1, 2);
 
 
     private const string _CRASH_ANIM_TRIGGER_NAME = "IsCrash";
@@ -20,6 +18,7 @@ public sealed class NearEnemyAI : Enemy
         this._detectDistance = 4;
         this._attackDistance = 1;
         this._movementSpeed = 3;
+        this._actionDistance = 3;
         this._isCoolTime = true;
     }
 
@@ -40,15 +39,24 @@ public sealed class NearEnemyAI : Enemy
                         new List<INode>()
                         {
                             new ActionNode(CheckAttacking), // 공격중?
-                            new ActionNode(CheckEnemyWithineAttackRange), // 공격 범위 안?
-                            new SelectorNode
+                            new InverterNode
                             (
-                                new List<INode> ()
+                                new List<INode>()
                                 {
-                                    new ActionNode(DoAttack),
-                                    new ActionNode(SpecialAttack)
+                                    new SequenceNode
+                                    (
+                                        new List<INode>()
+                                        {
+                                            new ActionNode(CheckCoolTime),
+                                            new ActionNode(CheckSpecialAttackDistance),
+                                            new ActionNode(SpecialAttack)
+
+                                        }
+                                    )
                                 }
-                            )
+                            ),
+                            new ActionNode(CheckEnemyWithineAttackRange), // 공격 범위 안?
+                            new ActionNode(DoAttack)
                         }
                     ),
                     new SequenceNode
@@ -64,6 +72,41 @@ public sealed class NearEnemyAI : Enemy
             );
     }
 
+    #region SpecialAttack_Node
+    private INode.ENodeState CheckCoolTime()
+    {
+        if (_isCoolTime)
+        {
+            return INode.ENodeState.ENS_Success;
+        }
+
+        return INode.ENodeState.ENS_Failure;
+    }
+
+    private INode.ENodeState CheckSpecialAttackDistance()
+    {
+        if (_detectedPlayer != null)
+        {
+            if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_actionDistance * _actionDistance))
+            {
+                return INode.ENodeState.ENS_Success;
+            }
+        }
+        return INode.ENodeState.ENS_Failure;
+    }
+
+    private INode.ENodeState SpecialAttack()
+    {
+        if (_isCoolTime && _detectedPlayer != null)
+        {
+            StartCoroutine(CoolTime());
+            StartCoroutine(CrashAttack());
+
+            return INode.ENodeState.ENS_Running;
+        }
+        return INode.ENodeState.ENS_Failure;
+    }
+    #endregion
 
     #region Near_Attack Node
     protected override INode.ENodeState CheckAttacking()
@@ -89,20 +132,6 @@ public sealed class NearEnemyAI : Enemy
             return INode.ENodeState.ENS_Success;
         }
 
-        return INode.ENodeState.ENS_Failure;
-    }
-
-    private INode.ENodeState SpecialAttack()
-    {
-        // 특수 공격 로직
-        // 코루틴 스타트
-        if (_isCoolTime && _detectedPlayer != null)
-        {
-            StartCoroutine(CoolTime());
-            StartCoroutine(CrashAttack());
-
-            return INode.ENodeState.ENS_Success;
-        }
         return INode.ENodeState.ENS_Failure;
     }
     #endregion
@@ -154,7 +183,6 @@ public sealed class NearEnemyAI : Enemy
             if (collision.gameObject.CompareTag("Player"))
             {
                 _rigid.velocity = new Vector2(0, 0);
-                Debug.Log("접근");
                 // 데미지를 주는 로직
                 // 넉백 적용
             }
