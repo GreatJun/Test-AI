@@ -155,7 +155,7 @@ public class Enemy : MonoBehaviour
         if (_detectedPlayer != null)
         {
             CheckPlayerRay();
-            if (hitData[1].collider.CompareTag("Player"))
+            if (hitData.Length > 1 && hitData[1].collider.CompareTag("Player"))
             {
                 if (Vector3.SqrMagnitude(_detectedPlayer.position - transform.position) < (_attackDistance * _attackDistance))
                 {

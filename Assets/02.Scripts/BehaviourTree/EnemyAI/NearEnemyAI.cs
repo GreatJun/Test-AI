@@ -94,7 +94,7 @@ public sealed class NearEnemyAI : Enemy
         if (_isCoolTime && _detectedPlayer != null)
         {
             CheckPlayerRay();
-            if (hitData[1].collider.CompareTag("Player"))
+            if (hitData.Length > 1 && hitData[1].collider.CompareTag("Player"))
             {
                 StartCoroutine(CoolTime());
                 StartCoroutine(CrashAttack());
